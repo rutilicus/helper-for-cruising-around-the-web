@@ -1,0 +1,24 @@
+@charset "utf-8";
+
+html, body {
+  margin: 0;
+  height: 100%;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.header {
+  display: flex;
+  padding: 8px 0px;
+  width: 100%;
+}
+
+.openPage {
+  width: 100%;
+  border: 0px;
+  flex-grow: 1;
+}
