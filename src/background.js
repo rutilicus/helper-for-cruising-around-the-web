@@ -1,14 +1,14 @@
 let openTabInfoList = [];
 
 function onRecievedHeader(details) {
+  let responseHeaders = details.responseHeaders;
   if (openTabInfoList.find((tabInfo) => tabInfo.tabId == details.tabId)) {
     if (details.responseHeaders) {
-      return {responseHeaders: details.responseHeaders.filter(
-        header => header.name.toLowerCase() != "x-frame-options" 
-                  && header.name.toLowerCase() != "content-security-policy")
-      };
+      responseHeaders = details.responseHeaders.filter((header) =>
+        header.name.toLowerCase() != "x-frame-options" && header.name.toLowerCase() != "content-security-policy");
     }
   }
+  return {responseHeaders: responseHeaders};
 }
 
 function onSendHeader(details) {

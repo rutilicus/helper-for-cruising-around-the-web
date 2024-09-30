@@ -165,33 +165,39 @@ function setNewItemPage() {
 }
 
 function savePreset() {
-  // ファイルバージョンを設定
-  browser.storage.local.set({version: fileVersion});
+  const presetName = document.getElementById("presetName").value;
+  if (presetName == "") {
+    window.alert("設定名を入力してください");
+  } else {
+    // ファイルバージョンを設定
+    browser.storage.local.set({version: fileVersion});
 
-  browser.storage.local.get("data").then((result) => {
-    const dataArray = JSON.parse(result.data || "[]");
-    const currentPresetData = new Object();
-    currentPresetData.presetName = document.getElementById("presetName").value;
-    currentPresetData.ua = document.getElementById("ua").value;
-    currentPresetData.items = [];
-    const itemElems = document.querySelectorAll(".item");
-    for (let i = 0; i < itemElems.length; i++) {
-      const itemData = new Object();
-      itemData.name = itemElems[i].querySelector("input[name=itemName]").value;
-      itemData.url = itemElems[i].querySelector("input[name=url]").value;
-      currentPresetData.items.push(itemData);
-    }
-    const dataIndex = dataArray.findIndex((data) => data.presetName == currentPresetData.presetName);
-    if (dataIndex != -1) {
-      dataArray[dataIndex] = currentPresetData;
-    } else {
-      dataArray.push(currentPresetData);
-    }
-    browser.storage.local.set({data: JSON.stringify(dataArray)});
+    browser.storage.local.get("data").then((result) => {
+      const dataArray = JSON.parse(result.data || "[]");
+      const currentPresetData = new Object();
+      currentPresetData.presetName = presetName;
+      currentPresetData.ua = document.getElementById("ua").value;
+      currentPresetData.items = [];
+      const itemElems = document.querySelectorAll(".item");
+      for (let i = 0; i < itemElems.length; i++) {
+        const itemData = new Object();
+        itemData.name = itemElems[i].querySelector("input[name=itemName]").value;
+        itemData.url = itemElems[i].querySelector("input[name=url]").value;
+        currentPresetData.items.push(itemData);
+      }
+      const origPresetName = document.getElementById("origPresetName").textContent;
+      const dataIndex = dataArray.findIndex((data) => data.presetName == origPresetName);
+      if (dataIndex != -1) {
+        dataArray[dataIndex] = currentPresetData;
+      } else {
+        dataArray.push(currentPresetData);
+      }
+      browser.storage.local.set({data: JSON.stringify(dataArray)});
 
-    // 保存したら戻る
-    removeContent();
-  });
+      // 保存したら戻る
+      removeContent();
+    });
+  }
 }
 
 function savePresetList() {
