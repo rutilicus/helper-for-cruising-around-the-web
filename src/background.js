@@ -1,18 +1,7 @@
 let openTabInfoList = [];
 
-function onRecievedHeader(details) {
-  let responseHeaders = details.responseHeaders;
-  if (openTabInfoList.find((tabInfo) => tabInfo.tabId == details.tabId)) {
-    if (details.responseHeaders) {
-      responseHeaders = details.responseHeaders.filter((header) =>
-        header.name.toLowerCase() != "x-frame-options" && header.name.toLowerCase() != "content-security-policy");
-    }
-  }
-  return {responseHeaders: responseHeaders};
-}
-
 function onSendHeader(details) {
-  const tabInfo = openTabInfoList.find((tabInfo) => tabInfo.tabId == details.tabId);
+  const tabInfo = openTabInfoList.find((tabInfo) => tabInfo.contantTabId == details.tabId);
   if (tabInfo && tabInfo.ua != "") {
     for (const header of details.requestHeaders) {
       if (header.name.toLowerCase() === "user-agent") {
@@ -24,22 +13,38 @@ function onSendHeader(details) {
 }
 
 function handleRemoved(tabId, removeInfo) {
-  openTabInfoList = openTabInfoList.filter((tabInfo) => tabInfo.tabId != tabId);
+  for (let i in openTabInfoList) {
+    if (openTabInfoList[i].baseTabId == tabId) {
+      openTabInfoList.splice(i, 1);
+      break;
+    }
+    if (openTabInfoList[i].contantTabId == tabId) {
+      browser.tabs.sendMessage(openTabInfoList[i].baseTabId, {method: "openNextTab"});
+      break;
+    }
+  }
 }
 
 function recieveMessage(message, sender, sendResponse) {
   switch (message.method) {
     case "addTabInfo":
-      openTabInfoList.push({tabId: message.tabId, ua: message.ua});
+      openTabInfoList.push({baseTabId: message.tabId, contantTabId: 0, ua: message.ua});
+      break;
+    case "openContentTab":
+      const openTabInfo = openTabInfoList.find((tabInfo) => tabInfo.baseTabId == sender.tab.id);
+      const removeTabId = openTabInfo.contantTabId;
+      browser.tabs.create({
+        url: message.url,
+      }).then((tab) => {
+        openTabInfo.contantTabId = tab.id
+        if (removeTabId != 0) {  
+          browser.tabs.remove(removeTabId);
+        }
+      });
       break;
   }
 }
 
-browser.webRequest.onHeadersReceived.addListener(
-  onRecievedHeader,
-  {urls: ["<all_urls>"]},
-  ["blocking", "responseHeaders"]
-);
 browser.webRequest.onBeforeSendHeaders.addListener(
   onSendHeader,
   {urls: ["<all_urls>"]},

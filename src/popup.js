@@ -38,7 +38,7 @@ document.addEventListener("click", function (e) {
     browser.runtime.sendMessage({ method: "addTabInfo", tabId: tab.id, ua: selectData.ua }).then(
       (message) => {
         browser.tabs.executeScript({
-          code: "setCruisingPage(" + JSON.stringify(readData[e.target.id].items) + ");"
+          code: "setCruisingPage(" + JSON.stringify(readData[e.target.id]) + ");"
         });    
       }
     );
